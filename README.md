@@ -5,6 +5,7 @@
 - GPIO Header
 - 8 Channel Relay Module
 - Button with LED
+- Terrabloom EC Fan https://youtu.be/kluuL5dU2_Q?si=Ofyb_LtWS_kj8pzH
 
 ## Front End
 Nice GUI - https://nicegui.io/
