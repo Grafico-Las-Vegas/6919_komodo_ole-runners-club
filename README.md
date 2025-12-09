@@ -1,17 +1,9 @@
 #  Komodo Ole Runners Club Project
 
-<<<<<<< HEAD
+
 ## User Front End
 - Two red buttons with LED backlight to activate the cold air bursts
 - Magnetic switch to turn on red LED buttons when door closes, and turn off fans when door opens
-=======
-## Hardware
-- Raspberry Pi 5 
-- GPIO Header
-- 8 Channel Relay Module
-- Button with LED
-- Terrabloom EC Fan https://youtu.be/kluuL5dU2_Q?si=Ofyb_LtWS_kj8pzH
->>>>>>> 18faf57694f26441e46b4e905e85a3536f207c90
 
 ## Control Back End
 - Engineering GUI to adjust fan burst length, over head white LED brightness, and emergency fan on/off switch
