@@ -4,26 +4,27 @@
 from time import sleep
 
 # 3rd Party Libraries
-from gpiozero import PWMLED, Button, Device, Fan, MockFactory
+import pigpio
 
 # Internal Libraries
 import GUI
 
 # Global Objects
 # Board numbering https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering
-overheadWhiteLED = PWMLED("BOARD13")
-leftButtonLED = PWMLED("BOARD13")
-rightButtonLED = PWMLED("BOARD15")
-leftButtonAction = Button("BOARD7")
-rightButtonAction = Button("BOARD11")
-fan0 = Fan("BOARD16")  # or PWMLED() maybe
-fan1 = Fan("BOARD18")  # or PWMLED() maybe
+#overheadWhiteLED = PWMLED("BOARD13")
+leftButtonPWMLED = 23   # GPIO23 & Physical/Board pin 16
+rightButtonPWMLED = 24  # GPIO24 & Physical/Board pin 18
+leftButtonAction = 5    # GPIO5  & Physical/Board pin 29
+rightButtonAction = 6   # GPIO5  & Physical/Board pin 31
+fan0PWM = 12            # GPIO12 & Physical/Board pin 32
+fan1PWM = 13            # GPIO13 & Physical/Board pin 33
+#  https://youtu.be/kluuL5dU2_Q?si=rZGEUGjZx0oBzIgy
 
 # Global Variables
 isDoorReady = False  # Door is open, not ready for fan blowing
 currentFanState = False
 currentFanDuration = GUI.DEFAULT_DURATION
-currentFanPercentage = GUI.MAX_DURATION
+currentFanPercentage = GUI.MAX_PERCENTAGE
 currentButtonLedBrightness = GUI.MAX_BRIGHTNESS
 currentOverheadBrightness = GUI.MAX_BRIGHTNESS
 
@@ -31,6 +32,13 @@ currentOverheadBrightness = GUI.MAX_BRIGHTNESS
 BRIGHTNESS = 0
 ACTION = 1
 
+PWM_FREQ = 10000  # 10KHz
+
+# Function to change the PWM Duty Cycle
+def set_PWM_duty_cycle(piInstance, PWM_FREQ_VALUE, GPIO_NUM, DutyCycle):
+    correctedDutyCycle = DutyCycle*10000 # pigpio lib requires Duty Cycle to be in Mega
+    piInstance.hardware_PWM(PWM_PIN_OUT, PWM_FREQ_VALUE, correctedDutyCycle)
+    print('PWM Duty Cycle Set to = ', DutyCycle)
 
 def turn_on_fans(fans):
     if currentFanDuration > GUI.MAX_DURATION:
@@ -67,7 +75,8 @@ def update_overhead_brightness(percentage=GUI.MAX_BRIGHTNESS):
 
 
 if __name__ == "__main__":
-    Device.pin_factory = MockFactory()
+
+    pi = pigpio.pi()
 
     gui = GUI()
     gui.start()
@@ -78,23 +87,16 @@ if __name__ == "__main__":
     currentOverheadBrightness = gui.whiteLedBrightnessInPercentage
     currentButtonLedBrightness = gui.redLedBrightnessInPercentage
 
-    # Button element references
-    self.on_button = None
-    self.off_button = None
-
-    fans = [fan0, fan1]
+    fans = [fan0PWM, fan1PWM]
     leftButton = [leftButtonLED, leftButtonAction]
     rightButton = [rightButtonLED, rightButtonAction]
 
     while True:
+        sleep(0.100) # Sleep to keep CPU below 80%
+
         if isDoorReady:
-            leftButtonAction.when_pressed = lambda: turn_on_fans(
-                fans, currentFanDuration
-            )
-            rightButtonAction.when_pressed = lambda: turn_on_fans(
-                fans, currentFanDuration
-            )
-            sleep(0.100)
+            leftButtonAction.when_pressed = lambda: turn_on_fans(fans)
+            rightButtonAction.when_pressed = lambda: turn_on_fans(fans)
 
         update_button_brightness(currentButtonLedBrightness)
-        update_overhead_brightness(currentOverheadBrightness)
+        # update_overhead_brightness(currentOverheadBrightness) - Control with physical button or remote control

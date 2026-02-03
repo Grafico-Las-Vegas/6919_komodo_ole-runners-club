@@ -2,7 +2,7 @@
 
 
 ## User Front End
-- Two red buttons with LED backlight to activate the cold air bursts
+- Two red buttons with LED backlight to activate 1 or 3 second cold air bursts
 - Magnetic switch to turn on red LED buttons when door closes, and turn off fans when door opens
 
 

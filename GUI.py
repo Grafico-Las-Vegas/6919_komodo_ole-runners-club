@@ -6,23 +6,24 @@ from time import sleep
 # 3rd Party Libraries
 from nicegui import ui
 
+MAX_PERCENTAGE = 100
 MAX_DURATION = 6
 DEFAULT_DURATION = 3
 MIN_DURATION = 1
+OFF = 0
 
 MAX_BRIGHTNESS = 100
 MIN_BRIGHTNESS = 0
-
 
 class GUI:
     powerButtonState = ["On", "Off"]
 
     def __init__(self):
         self.isFanOn = False
-        self.fanRunDurationInSeconds = 3
-        self.fanSpeedInPercentage = 100
-        self.whiteLedBrightnessInPercentage = 100
-        self.redLedBrightnessInPercentage = 100
+        self.fanRunDurationInSeconds = DEFAULT_DURATION
+        self.fanSpeedInPercentage = MAX_PERCENTAGE
+        self.whiteLedBrightnessInPercentage = MAX_PERCENTAGE
+        self.redLedBrightnessInPercentage = MAX_PERCENTAGE
 
         # Button element references
         self.on_button = None
@@ -71,7 +72,7 @@ class GUI:
             with ui.row().classes("w-full items-center"):
                 ui.label("Fan Duration (seconds):").classes("w-1/4 text-lg")
                 ui.select(
-                    [1, 3, 6],
+                    [1, DEFAULT_DURATION, 2*DEFAULT_DURATION],
                     value=3,
                     on_change=lambda e: gui.update_fan_config(
                         e.value, self.fanSpeedInPercentage
@@ -81,24 +82,24 @@ class GUI:
             with ui.row().classes("w-full items-center"):
                 ui.label("Fan Speed (%):").classes("w-1/4 text-lg")
                 ui.select(
-                    [0, 33, 66, 100],
+                    [OFF, 33, 66, MAX_PERCENTAGE],
                     value=3,
                     on_change=lambda e: gui.update_fan_config(
                         self.fanRunDurationInSeconds, e.value
                     ),
                 )
 
-            with ui.row().classes("w-full items-center"):
-                ui.label("White LED Brightness:").classes("w-1/4 text-lg")
-                ui.slider(min=0, max=100, value=100).classes("w-1/4").on(
-                    "update:model-value",
-                    lambda e: gui.update_led_config(e.args),
-                    throttle=1.0,
-                )
+            #with ui.row().classes("w-full items-center"):
+            #    ui.label("White LED Brightness:").classes("w-1/4 text-lg")
+            #    ui.slider(min=0, max=MAX_PERCENTAGE, value=MAX_PERCENTAGE).classes("w-1/4").on(
+            #        "update:model-value",
+            #        lambda e: gui.update_led_config(e.args),
+            #        throttle=1.0,
+            #    )
 
             with ui.row().classes("w-full items-center"):
                 ui.label("Red Button LED Brightness:").classes("w-1/4 text-lg")
-                ui.slider(min=0, max=100, value=100).classes("w-1/4").on(
+                ui.slider(min=0, max=MAX_PERCENTAGE, value=MAX_PERCENTAGE).classes("w-1/4").on(
                     "update:model-value",
                     lambda e: gui.update_led_config(e.args),
                     throttle=1.0,
