@@ -6,24 +6,25 @@ from time import sleep
 # 3rd Party Libraries
 from nicegui import ui
 
-MAX_PERCENTAGE = 100
-MAX_DURATION = 6
-DEFAULT_DURATION = 3
-MIN_DURATION = 1
-OFF = 0
-
-MAX_BRIGHTNESS = 100
-MIN_BRIGHTNESS = 0
-
 class GUI:
+
+    MAX_PERCENTAGE = 100
+    MAX_DURATION = 6
+    DEFAULT_DURATION = 3
+    MIN_DURATION = 1
+    OFF = 0
+
+    MAX_BRIGHTNESS = 100
+    MIN_BRIGHTNESS = 0
+
     powerButtonState = ["On", "Off"]
 
     def __init__(self):
         self.isFanOn = False
-        self.fanRunDurationInSeconds = DEFAULT_DURATION
-        self.fanSpeedInPercentage = MAX_PERCENTAGE
-        self.whiteLedBrightnessInPercentage = MAX_PERCENTAGE
-        self.redLedBrightnessInPercentage = MAX_PERCENTAGE
+        self.fanRunDurationInSeconds = GUI.DEFAULT_DURATION
+        self.fanSpeedInPercentage = GUI.MAX_PERCENTAGE
+        self.whiteLedBrightnessInPercentage = GUI.MAX_PERCENTAGE
+        self.redLedBrightnessInPercentage = GUI.MAX_PERCENTAGE
 
         # Button element references
         self.on_button = None
@@ -67,14 +68,14 @@ class GUI:
 
         self.update_gui_button_colors()
 
-    def layout(self, gui):
+    def layout(self):
         with ui.column().classes("w-full gap-8"):
             with ui.row().classes("w-full items-center"):
                 ui.label("Fan Duration (seconds):").classes("w-1/4 text-lg")
                 ui.select(
-                    [1, DEFAULT_DURATION, 2*DEFAULT_DURATION],
-                    value=3,
-                    on_change=lambda e: gui.update_fan_config(
+                    [1, GUI.DEFAULT_DURATION, 2*GUI.DEFAULT_DURATION],
+                    value=GUI.DEFAULT_DURATION,
+                    on_change=lambda e: GUI.update_fan_config(
                         e.value, self.fanSpeedInPercentage
                     ),
                 )
@@ -82,9 +83,9 @@ class GUI:
             with ui.row().classes("w-full items-center"):
                 ui.label("Fan Speed (%):").classes("w-1/4 text-lg")
                 ui.select(
-                    [OFF, 33, 66, MAX_PERCENTAGE],
-                    value=3,
-                    on_change=lambda e: gui.update_fan_config(
+                    [GUI.OFF, 33, 66, GUI.MAX_PERCENTAGE],
+                    value=GUI.MAX_PERCENTAGE,
+                    on_change=lambda e: GUI.update_fan_config(
                         self.fanRunDurationInSeconds, e.value
                     ),
                 )
@@ -99,9 +100,9 @@ class GUI:
 
             with ui.row().classes("w-full items-center"):
                 ui.label("Red Button LED Brightness:").classes("w-1/4 text-lg")
-                ui.slider(min=0, max=MAX_PERCENTAGE, value=MAX_PERCENTAGE).classes("w-1/4").on(
+                ui.slider(min=0, max=GUI.MAX_PERCENTAGE, value=GUI.MAX_PERCENTAGE).classes("w-1/4").on(
                     "update:model-value",
-                    lambda e: gui.update_led_config(e.args),
+                    lambda e: self.update_led_config(e.args),
                     throttle=1.0,
                 )
 
@@ -113,17 +114,17 @@ class GUI:
                     "Turn Off Fans", on_click=lambda: gui.button_pressed("Off")
                 ).classes("!bg-red-900 w-1/4")
 
-        def start(self):
-            # TODO: Make full screen on display selected
-            ui.run(
-                native=False,
-                dark=True,
-                title="Komodo Ole Runners Club Project",
-                window_size=(940, 640),
-            )
+    def start(self):
+        # TODO: Make full screen on display selected
+        ui.run(
+            native=False,
+            dark=True,
+            title="Komodo Ole Runners Club Project",
+            window_size=(940, 640),
+        )
 
 
 if __name__ in {"__main__", "__mp_main__"}:
     gui = GUI()
-    gui.layout(gui)
+    gui.layout()
     gui.start()
