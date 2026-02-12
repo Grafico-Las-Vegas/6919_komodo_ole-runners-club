@@ -1,219 +1,383 @@
 diff --git a/GUI.py b/GUI.py
-index eb5257a..726db7f 100644
+index 726db7f..5429db2 100644
 --- a/GUI.py
 +++ b/GUI.py
-@@ -75,7 +75,7 @@ class GUI:
-                 ui.select(
-                     [1, GUI.DEFAULT_DURATION, 2*GUI.DEFAULT_DURATION],
-                     value=GUI.DEFAULT_DURATION,
--                    on_change=lambda e: GUI.update_fan_config(
-+                    on_change=lambda e: gui.update_fan_config(
-                         e.value, self.fanSpeedInPercentage
+@@ -90,22 +90,6 @@ class GUI:
                      ),
                  )
-@@ -83,9 +83,9 @@ class GUI:
+ 
+-            #with ui.row().classes("w-full items-center"):
+-            #    ui.label("White LED Brightness:").classes("w-1/4 text-lg")
+-            #    ui.slider(min=0, max=MAX_PERCENTAGE, value=MAX_PERCENTAGE).classes("w-1/4").on(
+-            #        "update:model-value",
+-            #        lambda e: gui.update_led_config(e.args),
+-            #        throttle=1.0,
+-            #    )
+-
+-            with ui.row().classes("w-full items-center"):
+-                ui.label("Red Button LED Brightness:").classes("w-1/4 text-lg")
+-                ui.slider(min=0, max=GUI.MAX_PERCENTAGE, value=GUI.MAX_PERCENTAGE).classes("w-1/4").on(
+-                    "update:model-value",
+-                    lambda e: self.update_led_config("red", e.args),
+-                    throttle=1.0,
+-                )
+-
              with ui.row().classes("w-full items-center"):
-                 ui.label("Fan Speed (%):").classes("w-1/4 text-lg")
-                 ui.select(
--                    [GUI.OFF, 33, 66, GUI.MAX_PERCENTAGE],
-+                    [33, 67, GUI.MAX_PERCENTAGE],
-                     value=GUI.MAX_PERCENTAGE,
--                    on_change=lambda e: GUI.update_fan_config(
-+                    on_change=lambda e: gui.update_fan_config(
-                         self.fanRunDurationInSeconds, e.value
-                     ),
-                 )
-@@ -102,7 +102,7 @@ class GUI:
-                 ui.label("Red Button LED Brightness:").classes("w-1/4 text-lg")
-                 ui.slider(min=0, max=GUI.MAX_PERCENTAGE, value=GUI.MAX_PERCENTAGE).classes("w-1/4").on(
-                     "update:model-value",
--                    lambda e: self.update_led_config(e.args),
-+                    lambda e: self.update_led_config("red", e.args),
-                     throttle=1.0,
-                 )
+                 self.on_button = ui.button(
+                     "Turn On Fans", on_click=lambda: gui.button_pressed("On")
+diff --git a/OleRunnersClub.py b/OleRunnersClub.py
+index 5c3833f..2136ce0 100644
+--- a/OleRunnersClub.py
++++ b/OleRunnersClub.py
+@@ -4,51 +4,53 @@
+ from time import sleep
  
-diff --git a/README.md b/README.md
-index 5d57feb..83170bb 100644
---- a/README.md
-+++ b/README.md
-@@ -1,5 +1,7 @@
- #  Komodo Ole Runners Club Project
+ # 3rd Party Libraries
+-import pigpio
++# TODO: Remove unused import "Device"
++from gpiozero import Button, Device, PWMOutputDevice, DigitalOutputDevice
  
-+Based off https://www.pipelinegames.com/products/storm-chaser-simulator
+ # Internal Libraries
+-import GUI
+-
+-# Global Objects
+-# Board numbering https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering
+-#overheadWhiteLED = PWMLED("BOARD13")
+-leftButtonPWMLED = 23   # GPIO23 & Physical/Board pin 16
+-rightButtonPWMLED = 24  # GPIO24 & Physical/Board pin 18
+-leftButtonAction = 5    # GPIO5  & Physical/Board pin 29
+-rightButtonAction = 6   # GPIO5  & Physical/Board pin 31
+-fan0PWM = 12            # GPIO12 & Physical/Board pin 32
+-fan1PWM = 13            # GPIO13 & Physical/Board pin 33
+-#  https://youtu.be/kluuL5dU2_Q?si=rZGEUGjZx0oBzIgy
++from GUI import *
+ 
+ # Global Variables
+ isDoorReady = False  # Door is open, not ready for fan blowing
+ currentFanState = False
+-currentFanDuration = GUI.DEFAULT_DURATION
++#currentFanDuration = GUI.DEFAULT_DURATION
+ currentFanPercentage = GUI.MAX_PERCENTAGE
+-currentButtonLedBrightness = GUI.MAX_BRIGHTNESS
+-currentOverheadBrightness = GUI.MAX_BRIGHTNESS
+-
+-# Button Array Indicies
+-BRIGHTNESS = 0
+-ACTION = 1
+ 
++# Global Constants
+ PWM_FREQ = 10000  # 10KHz
+ 
+-# Function to change the PWM Duty Cycle
+-def set_PWM_duty_cycle(piInstance, PWM_FREQ_VALUE, GPIO_NUM, DutyCycle):
+-    correctedDutyCycle = DutyCycle*10000 # pigpio lib requires Duty Cycle to be in Mega
+-    piInstance.hardware_PWM(PWM_PIN_OUT, PWM_FREQ_VALUE, correctedDutyCycle)
+-    print('PWM Duty Cycle Set to = ', DutyCycle)
++# Global Objects
++# Board Numbering: https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering
++# Button / Sensor: https://gpiozero.readthedocs.io/en/stable/recipes.html#button
++# PWM Control:     https://gpiozero.readthedocs.io/en/stable/api_output.html#gpiozero.PWMOutputDevice
++activationButton = Button(4, pull_up=True)    # GPIO4  & Physical/Board pin 7
++topDoorSensor = Button(17, pull_up=True)         # GPIO17 & Physical/Board pin 11
++bottomDoorSensor = Button(27, pull_up=True)      # GPIO27 & Physical/Board pin 13
++fan0PWM = PWMOutputDevice(23, active_high=True, frequency=PWM_FREQ)            # GPIO23 & Physical/Board pin 16
++fan1PWM = PWMOutputDevice(24, active_high=True, frequency=PWM_FREQ)            # GPIO24 & Physical/Board pin 18
++chiller1Power = DigitalOutputDevice(6, active_high=True)                       # GPIO6 & Physical/Board pin 31  First Stage Unit A
++chiller2Power = DigitalOutputDevice(13, active_high=True)                      # GPIO13 & Physical/Board pin 33 Second Stage Unit A
++chiller3Power = DigitalOutputDevice(19, active_high=True)                      # GPIO19 & Physical/Board pin 35 First Stage Unit B
++chiller4Power = DigitalOutputDevice(26, active_high=True)                      # GPIO26 & Physical/Board pin 37 Second Stage Unit B
 +
  
- ## User Front End
- - Two red buttons with LED backlight to activate 1 or 3 second cold air bursts
-@@ -10,6 +12,10 @@
- - Engineering GUI to adjust fan burst length, over head white LED brightness, and emergency fan on/off switch
- - Raspberry Pi is controllable from any laptop using https://connect.raspberrypi.com/sign-in with BitWarden login username & password  
- 
-+## Notes for Manufacturing Hardware at Shop
-+1. Air flows out of the sticker side of all 5 fans on all  4 Thermoelectric Cooling Units (202-00003-A)
-+2. Drill hole in ??? to 
+ def turn_on_fans(fans):
++    """ Turn on fans for a GUI specified duration.
++        https://youtu.be/kluuL5dU2_Q?si=rZGEUGjZx0oBzIgy
 +
++    Args:
++        fans (list): List of fans to turn on.
++    """
+     if currentFanDuration > GUI.MAX_DURATION:
+         currentFanDuration = GUI.MAX_DURATION
+     if currentFanDuration <= 0:
+         currentFanDuration = GUI.MIN_DURATION
  
- ## Assemble Hardware on Site
- 1. Plug L5-30P extension cord #1 to #4 into generator
-@@ -31,6 +37,13 @@ chmod +x SetupOleRunnersClub.sh
- sudo ./SetupOleRunnersClub.sh
- ```
+     for fan in fans:
++        fan.value = currentFanPercentage / 100
+         fan.on()
  
-+## GUI User Manual
-+1. Fan Duration (seconds) has three options, and sets how long the air burst will last when ACTION button is pressed.
-+2. Fan Speed (%) has four options, and sets percentage of maximum speed (288 cubic feet per minute) of fans when they are running.
-+3. Red Button LED Brightness is a continous slider (0 to 100%), and sets brightness of ACTION button LED.
-+4. TURN ON FANS: Press this button to turn on fans continuously (Air will start warming up after about 9 seconds of continuous operation).
-+5. TURN OFF FANS: Press this button to turn off fans immediately (e.g. emergency like person wanting to leave wind chamber)
++    print(f"Turning on fans for {currentFanDuration} seconds")
+     sleep(currentFanDuration)
+ 
+     for fan in fans:
+@@ -65,38 +67,24 @@ def update_button_brightness(buttons, percentage=GUI.MAX_BRIGHTNESS):
+         button[BRIGHTNESS].pwm(percentage)
+ 
+ 
+-def update_overhead_brightness(percentage=GUI.MAX_BRIGHTNESS):
+-    if percentage > GUI.MAX_BRIGHTNESS:
+-        percentage = GUI.MAX_BRIGHTNESS
+-    if percentage < 0:
+-        percentage = GUI.MIN_BRIGHTNESS
+-
+-    overheadWhiteLED.pwm(percentage)
+-
+-
+ if __name__ == "__main__":
+ 
+-    pi = pigpio.pi()
+-
+     gui = GUI()
+     gui.start()
+ 
+-    currentFanState = gui.isFanOn
+-    currentFanDuration = gui.fanRunDurationInSeconds
+-    currentFanPercentage = gui.fanSpeedInPercentage
+-    currentOverheadBrightness = gui.whiteLedBrightnessInPercentage
+-    currentButtonLedBrightness = gui.redLedBrightnessInPercentage
+-
+     fans = [fan0PWM, fan1PWM]
+-    leftButton = [leftButtonLED, leftButtonAction]
+-    rightButton = [rightButtonLED, rightButtonAction]
+ 
+     while True:
++        currentFanState = gui.isFanOn
++        currentFanDuration = gui.fanRunDurationInSeconds
++        currentFanPercentage = gui.fanSpeedInPercentage
 +
+         sleep(0.100) # Sleep to keep CPU below 80%
  
- ## Test System Prior to Event
- - As user enters wind chamber and closes the door, LED buttons should turn on
+-        if isDoorReady:
+-            leftButtonAction.when_pressed = lambda: turn_on_fans(fans)
+-            rightButtonAction.when_pressed = lambda: turn_on_fans(fans)
++        if topDoorSensor.is_pressed or bottomDoorSensor.is_pressed:
++            isDoorReady = True
++        else:
++            isDoorReady = False
+ 
+-        update_button_brightness(currentButtonLedBrightness)
+-        # update_overhead_brightness(currentOverheadBrightness) - Control with physical button or remote control
++        if isDoorReady:
++            activationButton.when_pressed = turn_on_fans(fans)
 diff --git a/diff.txt b/diff.txt
-index 398bfab..e69de29 100644
+index eee21f5..61dd068 100644
 --- a/diff.txt
 +++ b/diff.txt
-@@ -1,143 +0,0 @@
--diff --git a/GPIO.py b/GPIO.py
--deleted file mode 100644
--index 4936985..0000000
----- a/GPIO.py
--+++ /dev/null
--@@ -1,40 +0,0 @@
---
---# https://gpiozero.readthedocs.io/en/stable/
---from gpiozero import Button
---from time import sleep
---
---
---MAX_DURATION = 10
---MIN_DURATION = 1
---
---# Board numbering https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering
---leftLED = PWMLED("BOARD13")
---rightLED = PWMLED("BOARD15")
---leftActionButton = Button("BOARD7")
---rightActionButton = Button("BOARD11")
---leftFan = Fan("BOARD16")
---rightFan = Fan("BOARD18")
---
---
---def turn_on_fan(duration=7):
---    if duration > MAX_DURATION:
---        duration = MAX_DURATION
---    elif duration < 0:
---        duration = MIN_DURATION
---
---    leftFan.on()
---    rightFan.on()
---    sleep(duration)
---    leftFan.off()
---    rightFan.off()
---
---
---if __name__ == "__main__":
---    gui = GUI()
---    gui.start()
---
---
---    while True:
---        leftActionButton.when_pressed = lambda: turn_on_fan()
---        rightActionButton.when_pressed = lambda: turn_on_fan()
---        sleep(1)
+@@ -1,219 +0,0 @@
 -diff --git a/GUI.py b/GUI.py
--index 05cf758..3d05f18 100644
+-index eb5257a..726db7f 100644
 ---- a/GUI.py
 -+++ b/GUI.py
--@@ -11,23 +11,33 @@ from nicegui import ui
-- class GUI:
+-@@ -75,7 +75,7 @@ class GUI:
+-                 ui.select(
+-                     [1, GUI.DEFAULT_DURATION, 2*GUI.DEFAULT_DURATION],
+-                     value=GUI.DEFAULT_DURATION,
+--                    on_change=lambda e: GUI.update_fan_config(
+-+                    on_change=lambda e: gui.update_fan_config(
+-                         e.value, self.fanSpeedInPercentage
+-                     ),
+-                 )
+-@@ -83,9 +83,9 @@ class GUI:
+-             with ui.row().classes("w-full items-center"):
+-                 ui.label("Fan Speed (%):").classes("w-1/4 text-lg")
+-                 ui.select(
+--                    [GUI.OFF, 33, 66, GUI.MAX_PERCENTAGE],
+-+                    [33, 67, GUI.MAX_PERCENTAGE],
+-                     value=GUI.MAX_PERCENTAGE,
+--                    on_change=lambda e: GUI.update_fan_config(
+-+                    on_change=lambda e: gui.update_fan_config(
+-                         self.fanRunDurationInSeconds, e.value
+-                     ),
+-                 )
+-@@ -102,7 +102,7 @@ class GUI:
+-                 ui.label("Red Button LED Brightness:").classes("w-1/4 text-lg")
+-                 ui.slider(min=0, max=GUI.MAX_PERCENTAGE, value=GUI.MAX_PERCENTAGE).classes("w-1/4").on(
+-                     "update:model-value",
+--                    lambda e: self.update_led_config(e.args),
+-+                    lambda e: self.update_led_config("red", e.args),
+-                     throttle=1.0,
+-                 )
 - 
--     def __init__(self):
--+        self.isFanOn = False
--         self.fanRunDurationInSeconds = 7
---        self.ledBrightnessPercentage = 1.0
--+        self.ledBrightnessPercentage = 100
-- 
--+    def update_fan_config(duration):
--+        self.fanRunDurationInSeconds = duration
-- 
---    def layout(self):
--+    def update_led_config(self, brightness):
--+        self.ledBrightnessPercentage = brightness
--+        print(f"LED Brightness updated to {brightness}%")
-- 
---        with ui.row():
---            ui.label('Fan Duration:')
---            ui.select([1, 5, 10], value=1)
---        with ui.row():
---            ui.label('LED Brightness:')
---            ui.slider(min=0, max=100, value=100)
--+
--+
--+    def layout(self, gui):
--+
--+        with ui.row().classes('w-full items-center'):
--+            ui.label('Fan Duration (seconds):').classes('w-1/8 text-lg')
--+            ui.select([1, 5, 10], value=1, on_change=lambda e: update_fan_config(e.value))
--+            ui.label('LED Brightness:').classes('w-1/10 text-lg')
--+            ui.slider(min=0, max=100, value=100).classes('w-1/8').on('update:model-value', lambda e: gui.update_led_config(e.args), throttle=1.0)
--+            ui.button('Turn on Fans', on_click=lambda: print('Turning')).classes('w-1/8')
--+            ui.button('Turn off Fans', on_click=lambda: print('Turning')).classes('w-1/8')
-- 
--     def start(self):
---        ui.run(dark=True, title='Komodo Ole Runners Club Project', window_size=(1920, 1080))
--+        ui.run(native=True, dark=True, title='Komodo Ole Runners Club Project', window_size=(1920, 1080))
-- 
-- if __name__ in {"__main__", "__mp_main__"}:
--     gui = GUI()
---    gui.layout()
--+    gui.layout(gui)
--     gui.start()
 -diff --git a/README.md b/README.md
--index c07ad70..0f40359 100644
+-index 5d57feb..83170bb 100644
 ---- a/README.md
 -+++ b/README.md
--@@ -2,11 +2,38 @@
+-@@ -1,5 +1,7 @@
+- #  Komodo Ole Runners Club Project
+- 
+-+Based off https://www.pipelinegames.com/products/storm-chaser-simulator
+-+
 - 
 - ## User Front End
-- - Two red buttons with LED backlight to activate the cold air bursts
---- Magnetic switch to turn on/off LED buttons
--+- Magnetic switch to turn on red LED buttons when door closes, and turn off fans when door opens
+- - Two red buttons with LED backlight to activate 1 or 3 second cold air bursts
+-@@ -10,6 +12,10 @@
+- - Engineering GUI to adjust fan burst length, over head white LED brightness, and emergency fan on/off switch
+- - Raspberry Pi is controllable from any laptop using https://connect.raspberrypi.com/sign-in with BitWarden login username & password  
 - 
-- ## Control Back End
---- Nice GUI - https://nicegui.io/ to adjust fan and
---- Raspberry Pi 5 controllable from any laptop using Pi Remote https://connect.raspberrypi.com/sign-in
---sudo apt update
---sudo apt upgrade
---sudo apt install python3-gpiozero
--+- Engineering GUI to adjust fan burst length, over head white LED brightness, and emergency fan on/off switch
--+- Raspberry Pi is controllable from any laptop using https://connect.raspberrypi.com/sign-in with BitWarden login username & password  
+-+## Notes for Manufacturing Hardware at Shop
+-+1. Air flows out of the sticker side of all 5 fans on all  4 Thermoelectric Cooling Units (202-00003-A)
+-+2. Drill hole in ??? to 
 -+
--+## Assemble Hardware
--+1. Plug L5-30P extension cord #1 to #4 into generator
--+2. Connect Raspberry Pi 5, HDMI display, and white LED to L5-30P plug #1
--+3. Connect Fan #1 and Fan #2 to L5-30P plug #2
--+4. Connect AC to DC Invertor #1 and AC to DC Invertor #2 to L5-30P plug #3
--+5. Connect AC to DC Invertor #2 and AC to DC Invertor #4 to L5-30P plug #4
+- 
+- ## Assemble Hardware on Site
+- 1. Plug L5-30P extension cord #1 to #4 into generator
+-@@ -31,6 +37,13 @@ chmod +x SetupOleRunnersClub.sh
+- sudo ./SetupOleRunnersClub.sh
+- ```
+- 
+-+## GUI User Manual
+-+1. Fan Duration (seconds) has three options, and sets how long the air burst will last when ACTION button is pressed.
+-+2. Fan Speed (%) has four options, and sets percentage of maximum speed (288 cubic feet per minute) of fans when they are running.
+-+3. Red Button LED Brightness is a continous slider (0 to 100%), and sets brightness of ACTION button LED.
+-+4. TURN ON FANS: Press this button to turn on fans continuously (Air will start warming up after about 9 seconds of continuous operation).
+-+5. TURN OFF FANS: Press this button to turn off fans immediately (e.g. emergency like person wanting to leave wind chamber)
 -+
--+## Setup Raspberry Pi Software
--+1. Make sure keyboard is connected to Raspberry Pi
--+2. Make sure HDMI display is connected to Raspberry Pi
--+3. Run the SetupOleRunnersClub.sh in Raspberry Pi terminal (Open with Ctrl + Alt + T):
--+```
--+cd ~
--+sudo ./SetupOleRunnersClub.sh
--+```
--+
--+## Test System
--+- As user enters wind chamber and closes door, LED buttons turn on
--+- When user presses either of two buttons, fans turn on for set time and LED buttons turn off
--+- Any time user leaves wind chamber and opens door, LED buttons turn off and fans turn off immediately
--+
--+
--+# FAQ's
--+1. How do I update the application?
--+2. Why is SetupOleRunnersClub.sh not running?
--+```
--+chmod +x install_komodo.sh
--+./SetupOleRunnersClub.sh
--+```
+- 
+- ## Test System Prior to Event
+- - As user enters wind chamber and closes the door, LED buttons should turn on
+-diff --git a/diff.txt b/diff.txt
+-index 398bfab..e69de29 100644
+---- a/diff.txt
+-+++ b/diff.txt
+-@@ -1,143 +0,0 @@
+--diff --git a/GPIO.py b/GPIO.py
+--deleted file mode 100644
+--index 4936985..0000000
+----- a/GPIO.py
+--+++ /dev/null
+--@@ -1,40 +0,0 @@
+---
+---# https://gpiozero.readthedocs.io/en/stable/
+---from gpiozero import Button
+---from time import sleep
+---
+---
+---MAX_DURATION = 10
+---MIN_DURATION = 1
+---
+---# Board numbering https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering
+---leftLED = PWMLED("BOARD13")
+---rightLED = PWMLED("BOARD15")
+---leftActionButton = Button("BOARD7")
+---rightActionButton = Button("BOARD11")
+---leftFan = Fan("BOARD16")
+---rightFan = Fan("BOARD18")
+---
+---
+---def turn_on_fan(duration=7):
+---    if duration > MAX_DURATION:
+---        duration = MAX_DURATION
+---    elif duration < 0:
+---        duration = MIN_DURATION
+---
+---    leftFan.on()
+---    rightFan.on()
+---    sleep(duration)
+---    leftFan.off()
+---    rightFan.off()
+---
+---
+---if __name__ == "__main__":
+---    gui = GUI()
+---    gui.start()
+---
+---
+---    while True:
+---        leftActionButton.when_pressed = lambda: turn_on_fan()
+---        rightActionButton.when_pressed = lambda: turn_on_fan()
+---        sleep(1)
+--diff --git a/GUI.py b/GUI.py
+--index 05cf758..3d05f18 100644
+----- a/GUI.py
+--+++ b/GUI.py
+--@@ -11,23 +11,33 @@ from nicegui import ui
+-- class GUI:
+-- 
+--     def __init__(self):
+--+        self.isFanOn = False
+--         self.fanRunDurationInSeconds = 7
+---        self.ledBrightnessPercentage = 1.0
+--+        self.ledBrightnessPercentage = 100
+-- 
+--+    def update_fan_config(duration):
+--+        self.fanRunDurationInSeconds = duration
+-- 
+---    def layout(self):
+--+    def update_led_config(self, brightness):
+--+        self.ledBrightnessPercentage = brightness
+--+        print(f"LED Brightness updated to {brightness}%")
+-- 
+---        with ui.row():
+---            ui.label('Fan Duration:')
+---            ui.select([1, 5, 10], value=1)
+---        with ui.row():
+---            ui.label('LED Brightness:')
+---            ui.slider(min=0, max=100, value=100)
+--+
+--+
+--+    def layout(self, gui):
+--+
+--+        with ui.row().classes('w-full items-center'):
+--+            ui.label('Fan Duration (seconds):').classes('w-1/8 text-lg')
+--+            ui.select([1, 5, 10], value=1, on_change=lambda e: update_fan_config(e.value))
+--+            ui.label('LED Brightness:').classes('w-1/10 text-lg')
+--+            ui.slider(min=0, max=100, value=100).classes('w-1/8').on('update:model-value', lambda e: gui.update_led_config(e.args), throttle=1.0)
+--+            ui.button('Turn on Fans', on_click=lambda: print('Turning')).classes('w-1/8')
+--+            ui.button('Turn off Fans', on_click=lambda: print('Turning')).classes('w-1/8')
+-- 
+--     def start(self):
+---        ui.run(dark=True, title='Komodo Ole Runners Club Project', window_size=(1920, 1080))
+--+        ui.run(native=True, dark=True, title='Komodo Ole Runners Club Project', window_size=(1920, 1080))
+-- 
+-- if __name__ in {"__main__", "__mp_main__"}:
+--     gui = GUI()
+---    gui.layout()
+--+    gui.layout(gui)
+--     gui.start()
+--diff --git a/README.md b/README.md
+--index c07ad70..0f40359 100644
+----- a/README.md
+--+++ b/README.md
+--@@ -2,11 +2,38 @@
+-- 
+-- ## User Front End
+-- - Two red buttons with LED backlight to activate the cold air bursts
+---- Magnetic switch to turn on/off LED buttons
+--+- Magnetic switch to turn on red LED buttons when door closes, and turn off fans when door opens
+-- 
+-- ## Control Back End
+---- Nice GUI - https://nicegui.io/ to adjust fan and
+---- Raspberry Pi 5 controllable from any laptop using Pi Remote https://connect.raspberrypi.com/sign-in
+---sudo apt update
+---sudo apt upgrade
+---sudo apt install python3-gpiozero
+--+- Engineering GUI to adjust fan burst length, over head white LED brightness, and emergency fan on/off switch
+--+- Raspberry Pi is controllable from any laptop using https://connect.raspberrypi.com/sign-in with BitWarden login username & password  
+--+
+--+## Assemble Hardware
+--+1. Plug L5-30P extension cord #1 to #4 into generator
+--+2. Connect Raspberry Pi 5, HDMI display, and white LED to L5-30P plug #1
+--+3. Connect Fan #1 and Fan #2 to L5-30P plug #2
+--+4. Connect AC to DC Invertor #1 and AC to DC Invertor #2 to L5-30P plug #3
+--+5. Connect AC to DC Invertor #2 and AC to DC Invertor #4 to L5-30P plug #4
+--+
+--+## Setup Raspberry Pi Software
+--+1. Make sure keyboard is connected to Raspberry Pi
+--+2. Make sure HDMI display is connected to Raspberry Pi
+--+3. Run the SetupOleRunnersClub.sh in Raspberry Pi terminal (Open with Ctrl + Alt + T):
+--+```
+--+cd ~
+--+sudo ./SetupOleRunnersClub.sh
+--+```
+--+
+--+## Test System
+--+- As user enters wind chamber and closes door, LED buttons turn on
+--+- When user presses either of two buttons, fans turn on for set time and LED buttons turn off
+--+- Any time user leaves wind chamber and opens door, LED buttons turn off and fans turn off immediately
+--+
+--+
+--+# FAQ's
+--+1. How do I update the application?
+--+2. Why is SetupOleRunnersClub.sh not running?
+--+```
+--+chmod +x install_komodo.sh
+--+./SetupOleRunnersClub.sh
+--+```

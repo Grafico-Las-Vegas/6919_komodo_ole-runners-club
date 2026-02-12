@@ -90,22 +90,6 @@ class GUI:
                     ),
                 )
 
-            #with ui.row().classes("w-full items-center"):
-            #    ui.label("White LED Brightness:").classes("w-1/4 text-lg")
-            #    ui.slider(min=0, max=MAX_PERCENTAGE, value=MAX_PERCENTAGE).classes("w-1/4").on(
-            #        "update:model-value",
-            #        lambda e: gui.update_led_config(e.args),
-            #        throttle=1.0,
-            #    )
-
-            with ui.row().classes("w-full items-center"):
-                ui.label("Red Button LED Brightness:").classes("w-1/4 text-lg")
-                ui.slider(min=0, max=GUI.MAX_PERCENTAGE, value=GUI.MAX_PERCENTAGE).classes("w-1/4").on(
-                    "update:model-value",
-                    lambda e: self.update_led_config("red", e.args),
-                    throttle=1.0,
-                )
-
             with ui.row().classes("w-full items-center"):
                 self.on_button = ui.button(
                     "Turn On Fans", on_click=lambda: gui.button_pressed("On")
