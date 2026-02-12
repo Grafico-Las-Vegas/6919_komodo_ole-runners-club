@@ -75,7 +75,7 @@ class GUI:
                 ui.select(
                     [1, GUI.DEFAULT_DURATION, 2*GUI.DEFAULT_DURATION],
                     value=GUI.DEFAULT_DURATION,
-                    on_change=lambda e: GUI.update_fan_config(
+                    on_change=lambda e: gui.update_fan_config(
                         e.value, self.fanSpeedInPercentage
                     ),
                 )
@@ -83,9 +83,9 @@ class GUI:
             with ui.row().classes("w-full items-center"):
                 ui.label("Fan Speed (%):").classes("w-1/4 text-lg")
                 ui.select(
-                    [GUI.OFF, 33, 66, GUI.MAX_PERCENTAGE],
+                    [33, 67, GUI.MAX_PERCENTAGE],
                     value=GUI.MAX_PERCENTAGE,
-                    on_change=lambda e: GUI.update_fan_config(
+                    on_change=lambda e: gui.update_fan_config(
                         self.fanRunDurationInSeconds, e.value
                     ),
                 )
@@ -102,7 +102,7 @@ class GUI:
                 ui.label("Red Button LED Brightness:").classes("w-1/4 text-lg")
                 ui.slider(min=0, max=GUI.MAX_PERCENTAGE, value=GUI.MAX_PERCENTAGE).classes("w-1/4").on(
                     "update:model-value",
-                    lambda e: self.update_led_config(e.args),
+                    lambda e: self.update_led_config("red", e.args),
                     throttle=1.0,
                 )
 

@@ -1,5 +1,7 @@
 #  Komodo Ole Runners Club Project
 
+Based off https://www.pipelinegames.com/products/storm-chaser-simulator
+
 
 ## User Front End
 - Two red buttons with LED backlight to activate 1 or 3 second cold air bursts
@@ -9,6 +11,10 @@
 ## Control Back End
 - Engineering GUI to adjust fan burst length, over head white LED brightness, and emergency fan on/off switch
 - Raspberry Pi is controllable from any laptop using https://connect.raspberrypi.com/sign-in with BitWarden login username & password  
+
+## Notes for Manufacturing Hardware at Shop
+1. Air flows out of the sticker side of all 5 fans on all  4 Thermoelectric Cooling Units (202-00003-A)
+2. Drill hole in ??? to 
 
 
 ## Assemble Hardware on Site
@@ -30,6 +36,13 @@ cd ~/6919_komodo_ole-runners-club
 chmod +x SetupOleRunnersClub.sh
 sudo ./SetupOleRunnersClub.sh
 ```
+
+## GUI User Manual
+1. Fan Duration (seconds) has three options, and sets how long the air burst will last when ACTION button is pressed.
+2. Fan Speed (%) has four options, and sets percentage of maximum speed (288 cubic feet per minute) of fans when they are running.
+3. Red Button LED Brightness is a continous slider (0 to 100%), and sets brightness of ACTION button LED.
+4. TURN ON FANS: Press this button to turn on fans continuously (Air will start warming up after about 9 seconds of continuous operation).
+5. TURN OFF FANS: Press this button to turn off fans immediately (e.g. emergency like person wanting to leave wind chamber)
 
 
 ## Test System Prior to Event
