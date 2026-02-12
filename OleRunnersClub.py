@@ -5,7 +5,10 @@ from time import sleep
 
 # 3rd Party Libraries
 # TODO: Remove unused import "Device"
-from gpiozero import Button, Device, PWMOutputDevice, DigitalOutputDevice
+from gpiozero import Device
+from gpiozero.pins.lgpio import LGPIOFactory
+from gpiozero.pins.mock import MockFactory
+from gpiozero import Button, PWMOutputDevice, DigitalOutputDevice
 
 # Internal Libraries
 from GUI import *
@@ -23,6 +26,8 @@ PWM_FREQ = 10000  # 10KHz
 # Board Numbering: https://gpiozero.readthedocs.io/en/stable/recipes.html#pin-numbering
 # Button / Sensor: https://gpiozero.readthedocs.io/en/stable/recipes.html#button
 # PWM Control:     https://gpiozero.readthedocs.io/en/stable/api_output.html#gpiozero.PWMOutputDevice
+Device.pin_factory = LGPIOFactory()
+#Device.pin_factory = MockFactory()
 activationButton = Button(4, pull_up=True)    # GPIO4  & Physical/Board pin 7
 topDoorSensor = Button(17, pull_up=True)         # GPIO17 & Physical/Board pin 11
 bottomDoorSensor = Button(27, pull_up=True)      # GPIO27 & Physical/Board pin 13
