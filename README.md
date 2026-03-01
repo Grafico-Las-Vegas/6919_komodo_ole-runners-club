@@ -2,34 +2,49 @@
 
 Based off https://www.pipelinegames.com/products/storm-chaser-simulator
 
+TODO: verified power supply current draw is 
+
 
 ## User Front End
-- Two red buttons with LED backlight to activate 1 or 3 second cold air bursts
+- One wireless remote control and two black buttons to activate 1 or 3 second cold air bursts
+- 
 - Magnetic switch to turn on red LED buttons when door closes, and turn off fans when door opens
 
 
 ## Control Back End
-- Engineering GUI to adjust fan burst length, over head white LED brightness, and emergency fan on/off switch
+- Engineering GUI to adjust fan burst length and emergency fan on/off switch
 - Raspberry Pi is controllable from any laptop using https://connect.raspberrypi.com/sign-in with BitWarden login username & password  
 
 ## Notes for Manufacturing Hardware at Shop
-1. Air flows out of the sticker side of all 5 fans on all  4 Thermoelectric Cooling Units (202-00003-A)
-2. Drill hole in ??? to 
-
+1. Air flows out of the sticker side of all 5 fans on all  4 Thermoelectric Cooling Units (202-00003-A). See black arrows in Figure 1 for hot and cold side air flow directions.
+2. Drill 3/16 inch hole in the plastic plate in between the cooling units to insert the two pair of thinner upper fan wires downwards (towards the radiators.) 
+3. Feed two pair of thicker upper chiller wires downwards (towards the radiators), under the foam padding.
+3. See figure 2 for air flow direction of the static ducted fans. The power cord should be above the speed controller port when installed for air to flow upwards.
+4. Slide two halves of the cooling unit plates together to allow cooling unit to mount to internal frame.
+5. Dont put the Outer Back Foam pieces onto 1st and 2nd Stage Cooling Chambers until 1st and 2nd stage are bolted together.
+6. The PL300 FoamBoard Construction Adhesive takes 24 to fully set up. Foam should not be moved until it is fully set.
 
 ## Assemble Hardware on Site
 1. Plug L5-30P extension cord #1 to #4 into generator
-2. Connect Raspberry Pi 5, HDMI display, and white LED to L5-30P plug #1
+2. Connect Raspberry Pi 5, HDMI display, and white overhead LED to L5-30P plug #1
 3. Connect Fan #1 and Fan #2 to L5-30P plug #2
 4. Connect AC to DC Invertor #1 and AC to DC Invertor #2 to L5-30P plug #3
 5. Connect AC to DC Invertor #2 and AC to DC Invertor #4 to L5-30P plug #4
 6. Adjust steel swivel leveling mounts to ensure stability and proper alignment for door opening and closing
+7. The black TerraBloom wireless controller with white tape and letter P is the main controller for the system. The 2nd controller is unpaired, but can be used for backup purposes if battery on the main controller is low.
+
+https://erayakpower.com/products/8000w-inverter-generator-whole-home-backup?variant=48276282638541&country=US&currency=USD&gad_campaignid=23378001586&gbraid=0AAAAAoI-_ZIQ9hAid7tx-dPsSlYFyiCvp
+
+https://www.jackery.com/products/jackery-explorer-5000-plus-series?variant=41336307449943
+
+https://www.homedepot.com/p/Westinghouse-18-000-14-500-Watt-Dual-Fuel-Gas-and-Propane-Portable-Generator-with-Remote-Electric-Start-Low-THD-and-50-Amp-Outlet-WGen14500DFc/318062122?g_store=3315&source=shoppingads&locale=en-US&fp=ggl
 
 
 ## Setup Software on New Raspberry Pi
 1. Make sure keyboard is connected to Raspberry Pi
 2. Make sure touch display is connected to Raspberry Pi and showing Desktop after booting up
 3. Make sure Raspberry Pi is connected to the internet via Ethernet or Wi-Fi
+  * nmcli device wifi connect "Blaze's iPhone" password "Ironman@42"
 4. Run the SetupOleRunnersClub.sh in Raspberry Pi terminal (Open with Ctrl + Alt + T):
 ```
 cd ~/6919_komodo_ole-runners-club
